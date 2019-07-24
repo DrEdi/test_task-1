@@ -1,5 +1,7 @@
 import os
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -108,6 +110,20 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
+
+CELERY_IGNORE_RESULT = False
+
+
+CELERYBEAT_SCHEDULE = {
+    'update-posts-job': {
+        'task': "core.tasks.update-posts",
+        'schedule': crontab(),
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/

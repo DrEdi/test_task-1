@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+  test:
+    build:
+       context: .
+       dockerfile: docker/Dockerfile
+    image: test
+    volumes:
+      - .:/test/:rw
+    restart: on-failure
+    ports:
+      - 8000:8000
+    command: python manage.py migrate
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - redis
+
+  celery:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: celery -A celery_config worker -l info
+    volumes:
+      - .:/test
+    restart: on-failure
+    depends_on:
+      - redis
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: celery -A celery_config beat -l info
+    volumes:
+      - .:/test
+    restart: on-failure
+    depends_on:
+      - redis
+
+volumes:
+  test_data:
